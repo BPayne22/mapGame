@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location Game</title>
+</head>
+<body>
+  <h1>Find the Goal!</h1>
+  <div id="status">Waiting for location...</div>
+
+  <script>
+    function sendLocation(position) {
+      fetch("https://76cd-141-148-176-231.ngrok-free.app/update_location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "victory") {
+          document.body.innerHTML = "<h1> Victory! You reached the goal!</h1>";
+        } else {
+          document.getElementById("status").innerText = `Keep going: ${Math.round(data.distance)} meters away`;
+        }
+      })
+      .catch(error => {
+        document.getElementById("status").innerText = "Error: " + error;
+      });
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendLocation, function (error) {
+          document.getElementById("status").innerText = "Geolocation error: " + error.message;
+        });
+      } else {
+        document.getElementById("status").innerText = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    setInterval(getLocation, 5000); // Try every 5 seconds
+  </script>
+</body>
+</html>
